@@ -1,0 +1,4 @@
+body { font-family: sans-serif; margin: 0; padding: 1rem; }
+#app { max-width: 960px; margin: 0 auto; }
+#video-input, #player-area { margin-top: 1rem; }
+button { margin-right: 0.5rem; }

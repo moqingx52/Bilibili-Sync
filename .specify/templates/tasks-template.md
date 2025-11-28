@@ -8,7 +8,7 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: Include the required automated tests per constitution (unit for logic, integration/contract for boundaries, end-to-end for journeys). Only omit when explicitly justified in the feature specification.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -51,6 +51,7 @@ description: "Task list template for feature implementation"
 - [ ] T001 Create project structure per implementation plan
 - [ ] T002 Initialize [language] project with [framework] dependencies
 - [ ] T003 [P] Configure linting and formatting tools
+- [ ] T003a Configure CI gates for tests/linters and baseline performance checks or benchmarks (where applicable)
 
 ---
 
@@ -94,6 +95,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
 - [ ] T016 [US1] Add validation and error handling
 - [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T017a [US1] Validate UX acceptance criteria (happy/empty/loading/error) and accessibility (WCAG 2.1 AA intent)
+- [ ] T017b [US1] Validate performance against budgets (e.g., latency, fps) with benchmark/profiling evidence
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -116,6 +119,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T021 [US2] Implement [Service] in src/services/[service].py
 - [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
 - [ ] T023 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T023a [US2] Validate UX acceptance criteria (happy/empty/loading/error) and accessibility (WCAG 2.1 AA intent)
+- [ ] T023b [US2] Validate performance against budgets with benchmark/profiling evidence
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -137,6 +142,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py
 - [ ] T027 [US3] Implement [Service] in src/services/[service].py
 - [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T028a [US3] Validate UX acceptance criteria (happy/empty/loading/error) and accessibility (WCAG 2.1 AA intent)
+- [ ] T028b [US3] Validate performance against budgets with benchmark/profiling evidence
 
 **Checkpoint**: All user stories should now be independently functional
 

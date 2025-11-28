@@ -31,7 +31,11 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- Code quality: Identify linters/formatters/static analysis to run and where results will be reported; note any tech debt acceptance with rationale.
+- Testing: List required suites for this feature (unit, integration/contract, end-to-end) and coverage expectations for touched areas (target ≥85% unless justified).
+- UX consistency: Document UX acceptance criteria (happy/empty/loading/error), link to design patterns, and capture accessibility expectations (WCAG 2.1 AA intent).
+- Performance: Set measurable budgets (latency, fps, memory, throughput) and describe how they will be validated (profiling, benchmarks, load tests, monitoring).
+- Delivery safety: Describe feature-flag/rollback strategy for risky or user-facing changes.
 
 ## Project Structure
 

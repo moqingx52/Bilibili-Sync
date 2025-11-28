@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="app">
+  <header>
+    <h1>Bilibili Sync</h1>
+    <form id="logout-form" method="post" action="/logout">
+      <button type="submit">Logout</button>
+    </form>
+  </header>
+
+  <section id="video-input">
+    <label for="video-url">Bilibili Link</label>
+    <input id="video-url" name="url" type="url" placeholder="https://www.bilibili.com/..." aria-label="Bilibili link" />
+    <button id="load-video" type="button">Load Video</button>
+    <div id="video-message" role="status" aria-live="polite"></div>
+  </section>
+
+  <section id="player-area">
+    <div id="player-container" aria-live="polite"></div>
+    <div id="controls">
+      <button id="play-btn" type="button" aria-label="Play">Play</button>
+      <button id="pause-btn" type="button" aria-label="Pause">Pause</button>
+      <button id="seek-btn" type="button" aria-label="Seek to 10 seconds">Seek to 00:10</button>
+    </div>
+  </section>
+</div>
+<script src="/static/js/auth.js"></script>
+<script src="/static/js/video.js"></script>
+<script src="/static/js/sync.js"></script>
+{% endblock %}

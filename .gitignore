@@ -1,1 +1,16 @@
 .codex/
+__pycache__/
+*.pyc
+.venv/
+venv/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+node_modules/
+playwright/.cache/
+.ruff_cache/
+.coverage
+.env
+.env.*
+.DS_Store

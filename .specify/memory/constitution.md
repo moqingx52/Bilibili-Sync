@@ -1,50 +1,65 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version: N/A → 1.0.0
+- Modified principles: Placeholder principle 1 → Code Quality & Maintainability; Placeholder principle 2 → Testing Discipline & Coverage; Placeholder principle 3 → User Experience Consistency; Placeholder principle 4 → Performance & Reliability; Removed placeholder principle 5
+- Added sections: Quality Gates & Definition of Done; Delivery Workflow & Reviews
+- Removed sections: Placeholder Principle 5
+- Templates requiring updates: .specify/templates/plan-template.md ✅; .specify/templates/spec-template.md ✅; .specify/templates/tasks-template.md ✅
+- Follow-up TODOs: TODO(RATIFICATION_DATE): set initial adoption date
+-->
+
+# VideoTogether Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### Code Quality & Maintainability
+- Code must remain readable, modular, and documented at the module or feature boundary; unused or dead code is removed promptly.
+- Linters, formatters, and static analysis are mandatory gates; risky changes are feature-flagged or shipped behind clear rollback paths.
+- Reviews focus on clarity, duplication avoidance, and dependency hygiene.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Rationale: Maintainable code reduces regression risk and accelerates onboarding.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### Testing Discipline & Coverage
+- Every functional change ships with automated tests sized to risk: unit for logic, integration/contract for boundaries, end-to-end for user journeys.
+- Bug fixes start with a failing test; CI must gate on the relevant suites with deterministic results.
+- New or changed logic must be covered; critical paths maintain high coverage (target ≥85% for touched areas) with explicit justification for exceptions.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+Rationale: Reliable tests prevent regressions and document intended behavior.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### User Experience Consistency
+- Interfaces follow the agreed design patterns, navigation flows, and copy standards; interactions remain predictable across platforms and states.
+- Accessibility meets WCAG 2.1 AA intent: keyboard access, readable contrast, and meaningful semantics.
+- Each story documents UX acceptance criteria (happy path, errors, empty/loading) before implementation; regressions require visual/UX verification.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Rationale: Consistent, accessible experiences build user trust and reduce support burden.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### Performance & Reliability
+- Define measurable budgets per feature before implementation (e.g., backend p95 latency <200ms under expected load; interactive UI responses <100ms for primary actions; animations maintain 60fps where applicable).
+- Include performance and load checks for relevant paths; track metrics/alerts for latency, errors, and saturation to catch regressions early.
+- Favor graceful degradation and back-pressure over silent failure; cache or batch when it improves user-perceived latency without compromising freshness requirements.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Rationale: Predictable performance keeps experiences responsive and dependable at scale.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Quality Gates & Definition of Done
+
+- No change merges without passing linters/formatters, static analysis, and the appropriate automated test suites for the scope.
+- Each change documents and meets UX acceptance criteria, including accessibility and cross-device/state checks (happy path, empty, loading, error).
+- Performance budgets are stated in the plan/spec and validated (benchmark, profiling, or load test) with results linked in the change artifacts.
+- Security, privacy, and reliability implications are acknowledged; feature flags or rollbacks exist for risky changes.
+- Documentation is updated alongside code: user-facing guides for UX-impacting work; code comments for complex logic; metrics/alert references for perf/reliability.
+
+## Delivery Workflow & Reviews
+
+- Work items flow through spec → plan → tasks, each explicitly calling out code quality, testing scope, UX criteria, and performance budgets.
+- Code review blocks merges until principle compliance is demonstrated: tests present and passing, UX/perf evidence attached, and rollback/flag strategy defined.
+- CI/CD enforces required checks from this constitution; manual overrides require documented approval and a follow-up hardening task.
+- Periodic (at least quarterly) health reviews reassess principles, budgets, and tooling efficacy; action items are tracked like features.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- This constitution supersedes conflicting guidelines; disputes are resolved in favor of the stricter quality, testing, UX, or performance requirement.
+- Amendments require an RFC describing motivation, intended version bump, scope of impact (principles/templates/process), and migration/education plan.
+- Versioning follows semantic rules: MAJOR for removals or incompatible redefinitions, MINOR for added or materially expanded principles, PATCH for clarifications.
+- Each amendment updates the **Last Amended** date and records compliance review expectations; quarterly reviews ensure ongoing adherence.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): set initial adoption date | **Last Amended**: 2024-11-28
