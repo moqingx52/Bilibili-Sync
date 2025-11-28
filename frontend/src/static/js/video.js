@@ -4,6 +4,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const message = document.getElementById('video-message');
   const container = document.getElementById('player-container');
 
+  function renderPlayer(url, shouldAutoplay) {
+    if (!container) return;
+    const target = new URL(url);
+    target.searchParams.set('autoplay', shouldAutoplay ? '1' : '0');
+    let iframe = container.querySelector('iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.setAttribute('allow', 'autoplay; fullscreen');
+      iframe.setAttribute('frameborder', '0');
+      iframe.style.width = '100%';
+      iframe.style.height = '480px';
+      container.appendChild(iframe);
+    }
+    const nextSrc = target.toString();
+    if (iframe.src !== nextSrc) {
+      iframe.src = nextSrc;
+    }
+  }
+
   async function submitVideo(url) {
     const resp = await fetch('/video', {
       method: 'POST',
@@ -27,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const resp = await submitVideo(url);
         const data = await resp.json();
         if (resp.ok && data.embed_url) {
-          container.innerHTML = `<iframe src="${data.embed_url}" allowfullscreen frameborder="0" width="100%" height="480"></iframe>`;
+          renderPlayer(data.embed_url, false);
           message.textContent = 'Video loaded';
         } else {
           message.textContent = data.error || 'Unable to load video';
