@@ -12,5 +12,8 @@ type:
 test:
 	pytest --maxfail=1 --disable-warnings -q
 
+run:
+	python -m app
+
 e2e:
 	pytest backend/tests/e2e
