@@ -3,7 +3,7 @@ from pathlib import Path
 from flask import Flask
 from flask_socketio import SocketIO  # type: ignore[import-untyped]
 
-socketio = SocketIO(async_mode="threading")
+socketio = SocketIO(async_mode="threading", cors_allowed_origins="*")
 
 def create_app() -> Flask:
     base_dir = Path(__file__).resolve().parents[3]
