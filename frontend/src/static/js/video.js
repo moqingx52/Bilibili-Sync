@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let iframe = container.querySelector('iframe');
     if (!iframe) {
       iframe = document.createElement('iframe');
-      iframe.setAttribute('allowfullscreen', '');
       iframe.setAttribute('allow', 'autoplay; fullscreen');
       iframe.setAttribute('frameborder', '0');
       iframe.style.width = '100%';
