@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bilibili Sync</title>
   <link rel="stylesheet" href="/static/css/style.css" />
-  <script src="/socket.io/socket.io.js"></script>
+  <!-- Use Socket.IO v4 client to match python-socketio 5.x server -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-JJx5kEpj6fQoEieE4vDTuUGjpHKgNz5PBAEzlsn84OzFmoiip5YuReGK98J6iCiW" crossorigin="anonymous"></script>
 </head>
 <body>
   {% block content %}{% endblock %}
