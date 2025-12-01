@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (resp.ok && data.embed_url) {
           renderPlayer(data.embed_url, false);
           message.textContent = 'Video loaded';
+          document.dispatchEvent(new CustomEvent('video:loaded', { detail: { url: data.embed_url } }));
         } else {
           message.textContent = data.error || 'Unable to load video';
         }

@@ -17,11 +17,45 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastState = { status: 'paused', position_ms: 0, url: null };
   let lastStateAt = performance.now();
   let connectionStatus = 'disconnected';
+  let playedMs = 0;
+  let playStartedAt = null;
 
   const nowMs = () => performance.now();
 
   function setStatus(text) {
     if (statusEl) statusEl.textContent = text;
+  }
+
+  function setControlsEnabled(enabled) {
+    [playBtn, pauseBtn, seekBtn].forEach((btn) => {
+      if (btn) btn.disabled = !enabled;
+    });
+  }
+
+  setControlsEnabled(false);
+
+  function currentPlayedMs() {
+    const inFlight = playStartedAt ? nowMs() - playStartedAt : 0;
+    return Math.max(0, playedMs + inFlight);
+  }
+
+  function handleStatusTransition(prevStatus, nextStatus) {
+    const now = nowMs();
+    if (prevStatus !== 'playing' && nextStatus === 'playing') {
+      playStartedAt = now;
+    } else if (prevStatus === 'playing' && nextStatus !== 'playing') {
+      const elapsed = playStartedAt ? now - playStartedAt : 0;
+      playedMs += Math.max(0, elapsed);
+      playStartedAt = null;
+    }
+  }
+
+  function resetPlaybackForNewVideo(url) {
+    playedMs = 0;
+    playStartedAt = null;
+    lastState = { status: 'paused', position_ms: 0, url: url || null };
+    lastStateAt = nowMs();
+    setControlsEnabled(Boolean(url));
   }
 
   function currentPositionMs() {
@@ -58,10 +92,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function describePlayback() {
     const positionSeconds = Math.round(currentPositionMs() / 1000);
+    const playedSeconds = Math.round(currentPlayedMs() / 1000);
     const clock = clockFormatter.format(new Date());
     const stateLabel = lastState.status || 'unknown';
     const videoLabel = lastState.url ? 'video loaded' : 'no video';
-    return `${connectionStatus}: ${stateLabel} | ${positionSeconds}s | ${videoLabel} | ${clock}`;
+    return `${connectionStatus}: ${stateLabel} | t=${positionSeconds}s | played=${playedSeconds}s | ${videoLabel} | ${clock}`;
   }
 
   function refreshStatus() {
@@ -79,9 +114,22 @@ document.addEventListener('DOMContentLoaded', () => {
   socket.on('disconnect', () => {
     connectionStatus = 'disconnected';
     setStatus('Disconnected - attempting reconnect');
+    setControlsEnabled(false);
   });
 
   socket.on('state', (state) => {
+    const prevStatus = lastState.status;
+    const prevUrl = lastState.url;
+    const urlChanged = state.url && prevUrl && state.url !== prevUrl;
+    const firstUrlSet = state.url && !prevUrl;
+    if (urlChanged || firstUrlSet) {
+      playedMs = 0;
+      playStartedAt = null;
+      setControlsEnabled(true);
+    } else if (!state.url) {
+      setControlsEnabled(false);
+    }
+    handleStatusTransition(prevStatus, state.status);
     lastState = state;
     lastStateAt = nowMs();
     const positionMs = state.position_ms || 0;
@@ -92,9 +140,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function emitControl(type, position_ms) {
+    if (!lastState.url) {
+      setStatus('Load a video before using playback controls');
+      return;
+    }
     const positionMs = position_ms ?? Math.round(currentPositionMs());
     socket.emit('control', { type, position_ms: positionMs });
   }
+
+  // Reset local timer when a new video is loaded via HTTP endpoint.
+  document.addEventListener('video:loaded', (event) => {
+    const url = event.detail && event.detail.url;
+    if (!url) return;
+    resetPlaybackForNewVideo(url);
+    refreshStatus();
+  });
 
   if (playBtn) playBtn.addEventListener('click', () => emitControl('play'));
   if (pauseBtn) pauseBtn.addEventListener('click', () => emitControl('pause'));
