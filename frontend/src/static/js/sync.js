@@ -8,9 +8,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const pauseBtn = document.getElementById('pause-btn');
   const seekBtn = document.getElementById('seek-btn');
   const container = document.getElementById('player-container');
+  const clockFormatter = new Intl.DateTimeFormat(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
 
   let lastState = { status: 'paused', position_ms: 0, url: null };
   let lastStateAt = performance.now();
+  let connectionStatus = 'disconnected';
 
   const nowMs = () => performance.now();
 
@@ -50,14 +56,36 @@ document.addEventListener('DOMContentLoaded', () => {
     iframe.src = nextSrc;
   }
 
-  socket.on('connect', () => setStatus('Connected'));
-  socket.on('disconnect', () => setStatus('Disconnected - attempting reconnect'));
+  function describePlayback() {
+    const positionSeconds = Math.round(currentPositionMs() / 1000);
+    const clock = clockFormatter.format(new Date());
+    const stateLabel = lastState.status || 'unknown';
+    const videoLabel = lastState.url ? 'video loaded' : 'no video';
+    return `${connectionStatus}: ${stateLabel} | ${positionSeconds}s | ${videoLabel} | ${clock}`;
+  }
+
+  function refreshStatus() {
+    if (connectionStatus !== 'connected') {
+      setStatus('Disconnected - attempting reconnect');
+      return;
+    }
+    setStatus(describePlayback());
+  }
+
+  socket.on('connect', () => {
+    connectionStatus = 'connected';
+    refreshStatus();
+  });
+  socket.on('disconnect', () => {
+    connectionStatus = 'disconnected';
+    setStatus('Disconnected - attempting reconnect');
+  });
 
   socket.on('state', (state) => {
     lastState = state;
     lastStateAt = nowMs();
     const positionMs = state.position_ms || 0;
-    setStatus(`Status: ${state.status} @ ${positionMs}ms`);
+    refreshStatus();
     if (state.url) {
       renderPlayer(state.url, state.status === 'playing', positionMs);
     }
@@ -71,4 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (playBtn) playBtn.addEventListener('click', () => emitControl('play'));
   if (pauseBtn) pauseBtn.addEventListener('click', () => emitControl('pause'));
   if (seekBtn) seekBtn.addEventListener('click', () => emitControl('seek', 10000));
+
+  // Periodically show the local playback status (play/pause, seconds, current clock).
+  setInterval(refreshStatus, 1000);
+  refreshStatus();
 });
