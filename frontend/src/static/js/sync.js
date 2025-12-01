@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const clock = clockFormatter.format(new Date());
     const stateLabel = lastState.status || 'unknown';
     const videoLabel = lastState.url ? 'video loaded' : 'no video';
-    return `${connectionStatus}: ${stateLabel} | t=${positionSeconds}s | played=${Math.round(currentPlayedMs() / 1000)}s | ${videoLabel} | ${clock}`;
+    return `${connectionStatus}: ${stateLabel} | t=${positionSeconds}s | ${videoLabel} | ${clock}`;
   }
 
   function refreshStatus() {
