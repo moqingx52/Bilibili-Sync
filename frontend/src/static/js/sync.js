@@ -46,9 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
       container.appendChild(iframe);
     }
     const nextSrc = target.toString();
-    if (iframe.src !== nextSrc) {
-      iframe.src = nextSrc;
-    }
+    // Always reset src so repeated seek commands take effect.
+    iframe.src = nextSrc;
   }
 
   socket.on('connect', () => setStatus('Connected'));
