@@ -92,11 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function describePlayback() {
     const positionSeconds = Math.round(currentPositionMs() / 1000);
-    const playedSeconds = Math.round(currentPlayedMs() / 1000);
     const clock = clockFormatter.format(new Date());
     const stateLabel = lastState.status || 'unknown';
     const videoLabel = lastState.url ? 'video loaded' : 'no video';
-    return `${connectionStatus}: ${stateLabel} | t=${positionSeconds}s | played=${playedSeconds}s | ${videoLabel} | ${clock}`;
+    return `${connectionStatus}: ${stateLabel} | t=${positionSeconds}s | played=${Math.round(currentPlayedMs() / 1000)}s | ${videoLabel} | ${clock}`;
   }
 
   function refreshStatus() {
