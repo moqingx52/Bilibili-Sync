@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     second: '2-digit',
   });
 
+  const HEARTBEAT_INTERVAL_MS = 5000;
   let lastState = { status: 'paused', position_ms: 0, url: null };
   let lastStateAt = performance.now();
   let connectionStatus = 'disconnected';
@@ -88,9 +89,21 @@ document.addEventListener('DOMContentLoaded', () => {
     setStatus(describePlayback());
   }
 
+  function sendHeartbeat() {
+    if (!socket.connected) return;
+    const heartbeat = {
+      url: lastState.url,
+      status: lastState.status,
+      position_ms: Math.round(currentPositionMs()),
+      reported_at: new Date().toISOString(),
+    };
+    socket.emit('heartbeat', heartbeat);
+  }
+
   socket.on('connect', () => {
     connectionStatus = 'connected';
     refreshStatus();
+    sendHeartbeat();
   });
   socket.on('disconnect', () => {
     connectionStatus = 'disconnected';
@@ -139,5 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Periodically show the local playback status (play/pause, seconds, current clock).
   setInterval(refreshStatus, 1000);
+  setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS);
   refreshStatus();
 });
