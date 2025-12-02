@@ -1,4 +1,8 @@
+import logging
 from pathlib import Path
+
+# Ensure INFO-level app logs (e.g., heartbeat events) are visible in dev runs.
+logging.basicConfig(level=logging.INFO)
 
 from flask import Flask
 from flask_socketio import SocketIO  # type: ignore[import-untyped]
