@@ -11,7 +11,7 @@ def _parse_log_level(level_name: str | None) -> int:
     """Translate a string level name to a logging level, defaulting to INFO."""
     if not level_name:
         return logging.INFO
-    numeric_level = logging.getLevelName(level_name.upper())
+    numeric_level = logging._nameToLevel[level_name.upper()]  # type: ignore[attr-defined]
     return numeric_level if isinstance(numeric_level, int) else logging.INFO
 
 
