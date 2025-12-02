@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   socket.on('state', (state) => {
-    const prevStatus = lastState.status;
     const prevUrl = lastState.url;
     const urlChanged = state.url && prevUrl && state.url !== prevUrl;
     const firstUrlSet = state.url && !prevUrl;
