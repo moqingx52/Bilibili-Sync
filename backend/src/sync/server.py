@@ -45,12 +45,19 @@ def handle_heartbeat(payload):
 
     heartbeat = _build_heartbeat(payload)
     drift_ms = _position_drift_ms(heartbeat)
+    snapshot = playback_state.snapshot()
     logger.info(
         "playback_heartbeat drift_ms=%s heartbeat=%s state=%s",
         drift_ms,
         heartbeat,
-        playback_state.snapshot(),
+        snapshot,
     )
+    if drift_ms is not None and abs(drift_ms) > 2000:
+        corrected_at = datetime.now(timezone.utc)
+        corrected_snapshot = dict(snapshot)
+        corrected_snapshot["position_ms"] = _expected_position_ms_at(corrected_at)
+        corrected_snapshot["reported_at"] = corrected_at.isoformat().replace("+00:00", "Z")
+        socketio.emit("state", corrected_snapshot, room=request.sid)
 
 
 def _coerce_int(value):
@@ -92,10 +99,16 @@ def _position_drift_ms(heartbeat: dict) -> int | None:
     if heartbeat_at is None or heartbeat_pos is None or state_at is None:
         return None
 
-    expected_pos = playback_state.position_ms or 0
-    if playback_state.status == "playing":
-        elapsed_ms = (heartbeat_at - state_at).total_seconds() * 1000
-        if elapsed_ms > 0:
-            expected_pos += elapsed_ms
+    expected_pos = _expected_position_ms_at(heartbeat_at)
 
     return int(heartbeat_pos - expected_pos)
+
+
+def _expected_position_ms_at(target_time: datetime | None) -> int:
+    position = playback_state.position_ms or 0
+    state_at = _parse_iso8601(playback_state.last_event_at)
+    if playback_state.status == "playing" and state_at and target_time:
+        elapsed_ms = (target_time - state_at).total_seconds() * 1000
+        if elapsed_ms > 0:
+            position += elapsed_ms
+    return int(max(0, position))
