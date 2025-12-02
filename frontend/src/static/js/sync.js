@@ -72,10 +72,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function describePlayback() {
     const positionSeconds = Math.round(currentPositionMs() / 1000);
-    const clock = clockFormatter.format(new Date());
     const stateLabel = lastState.status || 'unknown';
+    const stateAt = lastStateAt || nowMs();
+    const stateAtClock = clockFormatter.format(new Date(Date.now() - (nowMs() - stateAt)));
+    const clock = clockFormatter.format(new Date());
     const videoLabel = lastState.url ? 'video loaded' : 'no video';
-    return `${connectionStatus}: ${stateLabel} | t=${positionSeconds}s | ${videoLabel} | ${clock}`;
+    return `${connectionStatus}: ${stateLabel} | t=${positionSeconds}s | ${videoLabel} | state_at=${stateAtClock} | ${clock}`;
   }
 
   function refreshStatus() {
