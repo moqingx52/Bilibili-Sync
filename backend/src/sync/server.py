@@ -54,4 +54,4 @@ def handle_heartbeat(payload):
         "position_ms": _coerce_int(payload.get("position_ms")),
         "reported_at": payload.get("reported_at"),
     }
-    logger.info("playback_heartbeat", extra={"heartbeat": heartbeat})
+    logger.info("playback_heartbeat %s", heartbeat)
