@@ -8,3 +8,4 @@ class Config:
         self.SECRET_KEY = os.getenv("APP_SECRET_KEY", "dev-secret-key")
         self.SHARED_PASSWORD = os.getenv("APP_SHARED_PASSWORD", "changeme")
         self.SOCKETIO_MESSAGE_QUEUE = os.getenv("SOCKETIO_MESSAGE_QUEUE")
+        self.LOG_LEVEL = os.getenv("APP_LOG_LEVEL", "INFO")
