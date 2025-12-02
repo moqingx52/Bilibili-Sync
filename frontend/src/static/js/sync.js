@@ -135,7 +135,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     const positionMs = position_ms ?? Math.round(currentPositionMs());
-    socket.emit('control', { type, position_ms: positionMs });
+    socket.emit('control', {
+      type,
+      position_ms: positionMs,
+      reported_at: new Date().toISOString(),
+    });
   }
 
   // Reset local timer when a new video is loaded via HTTP endpoint.

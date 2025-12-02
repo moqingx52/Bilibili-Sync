@@ -30,7 +30,8 @@ def handle_control(payload):
         return False
     event_type = payload.get("type")
     position_ms = payload.get("position_ms")
-    update = playback_state.apply(event_type, position_ms, actor=request.sid)
+    reported_at = payload.get("reported_at")
+    update = playback_state.apply(event_type, position_ms, actor=request.sid, reported_at=reported_at)
     if update:
         socketio.emit("state", update, room=ROOM)
 
