@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 
 from app import socketio
 from app.auth import is_authenticated
@@ -42,17 +43,59 @@ def handle_heartbeat(payload):
         return False
     payload = payload or {}
 
-    def _coerce_int(value):
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            return None
+    heartbeat = _build_heartbeat(payload)
+    drift_ms = _position_drift_ms(heartbeat)
+    logger.info(
+        "playback_heartbeat drift_ms=%s heartbeat=%s state=%s",
+        drift_ms,
+        heartbeat,
+        playback_state.snapshot(),
+    )
 
-    heartbeat = {
+
+def _coerce_int(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _parse_iso8601(timestamp: str | None) -> datetime | None:
+    if not timestamp:
+        return None
+    try:
+        ts = timestamp
+        if isinstance(ts, str) and ts.endswith("Z"):
+            ts = ts.replace("Z", "+00:00")
+        dt = datetime.fromisoformat(ts)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+    except ValueError:
+        return None
+
+
+def _build_heartbeat(payload: dict) -> dict:
+    return {
         "actor": request.sid,
         "url": payload.get("url"),
         "status": payload.get("status"),
         "position_ms": _coerce_int(payload.get("position_ms")),
         "reported_at": payload.get("reported_at"),
     }
-    logger.info("playback_heartbeat %s", heartbeat)
+
+
+def _position_drift_ms(heartbeat: dict) -> int | None:
+    heartbeat_at = _parse_iso8601(heartbeat.get("reported_at"))
+    heartbeat_pos = heartbeat.get("position_ms")
+    state_at = _parse_iso8601(playback_state.last_event_at)
+    if heartbeat_at is None or heartbeat_pos is None or state_at is None:
+        return None
+
+    expected_pos = playback_state.position_ms or 0
+    if playback_state.status == "playing":
+        elapsed_ms = (heartbeat_at - state_at).total_seconds() * 1000
+        if elapsed_ms > 0:
+            expected_pos += elapsed_ms
+
+    return int(heartbeat_pos - expected_pos)
