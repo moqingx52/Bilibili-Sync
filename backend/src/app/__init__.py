@@ -4,7 +4,8 @@ from pathlib import Path
 from flask import Flask
 from flask_socketio import SocketIO  # type: ignore[import-untyped]
 
-socketio = SocketIO(async_mode="threading", cors_allowed_origins="*")
+# Let async_mode be configured at runtime (default to gevent for gunicorn deployments).
+socketio = SocketIO(cors_allowed_origins="*")
 
 
 def _parse_log_level(level_name: str | None) -> int:
@@ -42,5 +43,9 @@ def create_app() -> Flask:
     from app import routes  # noqa: WPS433,F401
 
     app.register_blueprint(routes.bp)
-    socketio.init_app(app)
+    socketio.init_app(
+        app,
+        async_mode=config.SOCKETIO_ASYNC_MODE,
+        message_queue=config.SOCKETIO_MESSAGE_QUEUE,
+    )
     return app

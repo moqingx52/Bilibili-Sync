@@ -35,6 +35,7 @@ Environment variables (all read at startup in `backend/src/app/config.py`):
 - `APP_SECRET_KEY` (default `dev-secret-key`): Flask session secret.
 - `APP_HOST` (default `0.0.0.0`) and `APP_PORT` (default `5000`): Bind address/port.
 - `APP_LOG_LEVEL` (default `INFO`): Root log level.
+- `SOCKETIO_ASYNC_MODE` (default `gevent`): Socket.IO worker backend; keep `gevent` for gunicorn/websocket support.
 - `SOCKETIO_MESSAGE_QUEUE` (optional): Redis/AMQP URL for scaling Socket.IO beyond one process.
 
 ## Run the App
@@ -49,6 +50,23 @@ Open `http://localhost:5000/login`, enter the shared password, then:
 3. Use **Play / Pause / Seek**; other logged-in users mirror the state within ~1s.
 
 State is in-memory and single-room; restarting the server clears the current video/position.
+
+## Deploy with gunicorn + gevent
+- Install deps (already in `backend/requirements.txt`): `pip install -r backend/requirements.txt`
+- Export a strong shared password: `export APP_SHARED_PASSWORD="changeme"`
+- Run gunicorn with gevent websocket worker (single process keeps in-memory sync state coherent):
+```bash
+cd backend
+PYTHONPATH=src \
+gunicorn \
+  --worker-class geventwebsocket.gunicorn.workers.GeventWebSocketWorker \
+  --workers 1 \
+  --worker-connections 1000 \
+  --bind 0.0.0.0:8000 \
+  'app:create_app()'
+```
+- For multi-process scaling, set `SOCKETIO_MESSAGE_QUEUE` to Redis/AMQP **and** move playback state to shared storage; otherwise keep `--workers 1`.
+- Put Nginx/another reverse proxy in front for TLS and static caching if deploying publicly.
 
 ## API and Realtime Surface
 - `GET /login` — Render login form.  

@@ -22,14 +22,36 @@ export PYTHONPATH="${SRC_DIR}:${PYTHONPATH:-}"
 : "${APP_HOST:=0.0.0.0}"
 : "${APP_PORT:=5050}"
 : "${APP_LOG_LEVEL:=INFO}"
+: "${SOCKETIO_ASYNC_MODE:=gevent}"
+: "${WORKERS:=1}"
+: "${WORKER_CONNECTIONS:=1000}"
 
-echo "Starting VideoTogether on ${APP_HOST}:${APP_PORT}"
+echo "Starting VideoTogether (gunicorn + gevent) on ${APP_HOST}:${APP_PORT}"
 echo "  - APP_SHARED_PASSWORD=${APP_SHARED_PASSWORD}"
+echo "  - APP_LOG_LEVEL=${APP_LOG_LEVEL}"
+echo "  - SOCKETIO_ASYNC_MODE=${SOCKETIO_ASYNC_MODE}"
+echo "  - WORKERS=${WORKERS} worker_connections=${WORKER_CONNECTIONS}"
 echo "  - PYTHONPATH=${PYTHONPATH}"
 echo "  - Using Python: $(which python)"
 
-APP_SHARED_PASSWORD="${APP_SHARED_PASSWORD}" \
-APP_HOST="${APP_HOST}" \
-APP_PORT="${APP_PORT}" \
-APP_LOG_LEVEL="${APP_LOG_LEVEL}" \
-python -m app
+if [[ "${USE_DEV_SERVER:-0}" == "1" ]]; then
+  echo "USE_DEV_SERVER=1 set; running python -m app (Werkzeug dev server)."
+  APP_SHARED_PASSWORD="${APP_SHARED_PASSWORD}" \
+  APP_HOST="${APP_HOST}" \
+  APP_PORT="${APP_PORT}" \
+  APP_LOG_LEVEL="${APP_LOG_LEVEL}" \
+  SOCKETIO_ASYNC_MODE="${SOCKETIO_ASYNC_MODE}" \
+  python -m app
+else
+  APP_SHARED_PASSWORD="${APP_SHARED_PASSWORD}" \
+  APP_HOST="${APP_HOST}" \
+  APP_PORT="${APP_PORT}" \
+  APP_LOG_LEVEL="${APP_LOG_LEVEL}" \
+  SOCKETIO_ASYNC_MODE="${SOCKETIO_ASYNC_MODE}" \
+  gunicorn \
+    --worker-class geventwebsocket.gunicorn.workers.GeventWebSocketWorker \
+    --workers "${WORKERS}" \
+    --worker-connections "${WORKER_CONNECTIONS}" \
+    --bind "${APP_HOST}:${APP_PORT}" \
+    'app:create_app()'
+fi
