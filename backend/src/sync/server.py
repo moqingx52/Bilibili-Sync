@@ -6,6 +6,8 @@ from app.auth import is_authenticated
 from flask import request
 from flask_socketio import join_room, leave_room
 
+from sync.chat.history import emit_history
+from sync.chat import handlers as chat_handlers  # noqa: F401
 from sync.state import playback_state
 
 ROOM = "shared-room"
@@ -18,6 +20,7 @@ def handle_connect(auth=None):
         return False  # disconnect
     join_room(ROOM)
     socketio.emit("state", playback_state.snapshot(), room=request.sid)
+    emit_history(request.sid)
 
 
 @socketio.on("disconnect")

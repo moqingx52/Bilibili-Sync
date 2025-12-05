@@ -2,7 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!window.io) {
     return;
   }
-  const socket = io({ withCredentials: true });
+  const socket = window.appSocket || io({ withCredentials: true });
+  window.appSocket = socket;
   const statusEl = document.getElementById('video-message');
   const playBtn = document.getElementById('play-btn');
   const pauseBtn = document.getElementById('pause-btn');

@@ -22,3 +22,11 @@ def timed(event: str) -> Iterator[None]:
     finally:
         end = time.perf_counter()
         record_latency(event, (end - start) * 1000)
+
+
+def record_chat_send(message_id: str, sender_id: str) -> None:
+    logger.info("chat_message_sent", extra={"message_id": message_id, "sender_id": sender_id})
+
+
+def record_chat_error(code: str, detail: str | None = None) -> None:
+    logger.warning("chat_error", extra={"code": code, "detail": detail})

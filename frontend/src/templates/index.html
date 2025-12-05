@@ -23,8 +23,23 @@
       <button id="seek-btn" type="button" aria-label="Seek to 10 seconds">Seek to 00:10</button>
     </div>
   </section>
+
+  <section id="chat-panel" aria-label="Room chat">
+    <header class="chat-header">
+      <h2>Chat</h2>
+      <div id="chat-status" role="status" aria-live="polite"></div>
+    </header>
+    <div id="chat-messages" role="log" aria-live="polite" aria-relevant="additions text"></div>
+    <button id="chat-new-indicator" type="button" hidden>New messages</button>
+    <form id="chat-form" novalidate>
+      <label class="sr-only" for="chat-input">Type a message</label>
+      <input id="chat-input" name="chat" type="text" maxlength="500" autocomplete="off" placeholder="Say something..." />
+      <button id="chat-send" type="submit">Send</button>
+    </form>
+  </section>
 </div>
 <script src="/static/js/auth.js"></script>
 <script src="/static/js/video.js"></script>
 <script src="/static/js/sync.js"></script>
+<script src="/static/js/chat.js"></script>
 {% endblock %}

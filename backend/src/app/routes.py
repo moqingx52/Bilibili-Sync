@@ -7,6 +7,12 @@ from app.auth import is_authenticated, login_with_password, require_auth
 
 bp = Blueprint("app", __name__)
 
+try:
+    # Optional import; chat routes may not exist in every feature set.
+    from sync.chat.context import chat_store  # type: ignore
+except Exception:  # pragma: no cover - fallback when chat not present
+    chat_store = None
+
 
 @bp.route("/", methods=["GET"])
 @require_auth
@@ -45,3 +51,17 @@ def set_video():
     playback_state.set_video(embed_url)
     log_video_selection(request.remote_addr or "unknown", embed_url)
     return jsonify({"ok": True, "embed_url": embed_url})
+
+
+@bp.route("/api/chat/history", methods=["GET"])
+@require_auth
+def chat_history():
+    if chat_store is None:
+        return jsonify({"ok": False, "error": "chat_not_enabled"}), 404
+    try:
+        limit = int(request.args.get("limit", 50))
+    except (TypeError, ValueError):
+        limit = 50
+    limit = min(max(1, limit), 50)
+    messages = chat_store.latest(limit)
+    return jsonify({"messages": messages})

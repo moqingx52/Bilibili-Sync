@@ -1,0 +1,157 @@
+openapi: 3.1.0
+info:
+  title: Room Text Chat API
+  version: 0.1.0
+  description: HTTP and Socket.IO contracts for in-room text chat (session-scoped, Flask-SocketIO stack).
+servers:
+  - url: http://localhost:5000
+    description: Local development
+paths:
+  /api/chat/history:
+    get:
+      summary: Fetch latest chat messages for the current room
+      tags: [chat]
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 50
+          description: Number of most recent messages to return (newest last).
+      responses:
+        '200':
+          description: Recent messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatMessage'
+                required: [messages]
+        '401':
+          description: Authentication required
+        '500':
+          description: Server error
+  /api/chat/message:
+    post:
+      summary: Send a chat message (HTTP fallback; Socket.IO preferred)
+      tags: [chat]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatMessageSendRequest'
+      responses:
+        '200':
+          description: Message accepted and broadcasted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: '#/components/schemas/ChatMessage'
+                required: [message]
+        '400':
+          description: Validation error (e.g., empty or >500 chars)
+        '401':
+          description: Authentication required
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error
+
+components:
+  schemas:
+    ChatMessage:
+      type: object
+      properties:
+        message_id:
+          type: string
+          description: UUID assigned by server for dedupe/acks.
+        sender_id:
+          type: string
+          description: Participant/session identifier (not exposed to other users if sensitive).
+        sender_label:
+          type: string
+          description: Display name shown to recipients.
+        content:
+          type: string
+          minLength: 1
+          maxLength: 500
+        sent_at:
+          type: string
+          format: date-time
+          description: Server timestamp when accepted.
+        client_reported_at:
+          type: string
+          format: date-time
+          description: Optional client-side send time for latency measurement.
+        delivery_status:
+          type: string
+          enum: [sending, sent, failed]
+          description: Sender-facing status; receivers will see `sent`.
+      required:
+        - message_id
+        - sender_label
+        - content
+        - sent_at
+        - delivery_status
+    ChatMessageSendRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 500
+        message_id:
+          type: string
+          description: Client-generated UUID for idempotent resend; optional (server will assign if absent).
+        client_reported_at:
+          type: string
+          format: date-time
+          description: Client-side timestamp to measure latency.
+      required: [content]
+
+x-socketio:
+  description: Socket.IO events for chat (namespace: default; room: shared-room)
+  events:
+    chat:send:
+      direction: client->server
+      payload:
+        $ref: '#/components/schemas/ChatMessageSendRequest'
+      ack:
+        description: Server responds with `{ ok: true, message }` on success; `{ ok: false, error }` on validation/rate-limit errors.
+    chat:message:
+      direction: server->client
+      payload:
+        $ref: '#/components/schemas/ChatMessage'
+      notes: Broadcast to all participants in room when a message is accepted.
+    chat:history:
+      direction: server->client
+      payload:
+        type: object
+        properties:
+          messages:
+            type: array
+            items:
+              $ref: '#/components/schemas/ChatMessage'
+        required: [messages]
+      notes: Emitted to newly joined client after authentication; includes latest 50 messages.
+    chat:error:
+      direction: server->client
+      payload:
+        type: object
+        properties:
+          error:
+            type: string
+          code:
+            type: string
+            description: e.g., `rate_limit`, `validation`, `unauthorized`.
+      notes: Emitted on validation/rate-limit errors when no ack was requested.
