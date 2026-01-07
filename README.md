@@ -37,12 +37,13 @@ Environment variables (all read at startup in `backend/src/app/config.py`):
 - `APP_LOG_LEVEL` (default `INFO`): Root log level.
 - `SOCKETIO_ASYNC_MODE` (default `gevent`): Socket.IO worker backend; keep `gevent` for gunicorn/websocket support.
 - `SOCKETIO_MESSAGE_QUEUE` (optional): Redis/AMQP URL for scaling Socket.IO beyond one process.
+```bash
 这里改了一下做了id：password处理，现在内容可以是下面这些
 APP_SECRET_KEY="随机 key"
 APP_USERS="exp:exp01,lizi:lizi456"
-不想要老的“共享密码”可以把 APP_SHARED_PASSWORD 删掉或注释掉
-APP_SHARED_PASSWORD="exp"
-
+#不想要老的“共享密码”可以把 APP_SHARED_PASSWORD 删掉或注释掉
+#APP_SHARED_PASSWORD="exp"
+```
 
 ## Run the App
 ```bash
