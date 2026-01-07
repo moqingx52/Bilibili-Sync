@@ -3,7 +3,8 @@ from sync.state import playback_state
 from video.logging import log_video_selection
 from video.validator import normalize_bilibili_url
 
-from app.auth import is_authenticated, login_with_password, require_auth
+# 这里改成引入 login_with_credentials，而不是原来的 login_with_password
+from app.auth import is_authenticated, login_with_credentials, require_auth
 
 bp = Blueprint("app", __name__)
 
@@ -22,15 +23,33 @@ def index():
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "POST":
-        payload = request.get_json() or request.form
-        password = payload.get("password") if payload else None
-        if password and login_with_password(password):
-            return jsonify({"ok": True}) if request.is_json else redirect(url_for("app.index"))
-        return (jsonify({"ok": False, "error": "Invalid password"}), 401)
-    if is_authenticated():
-        return redirect(url_for("app.index"))
-    return render_template("login.html")
+    # GET：直接渲染登录页，如果已经登录就跳首页
+    if request.method == "GET":
+        if is_authenticated():
+            return redirect(url_for("app.index"))
+        return render_template("login.html")
+
+    # POST：处理登录提交（JSON 或表单都可以）
+    payload = request.get_json(silent=True) or request.form
+    user_id = (payload.get("user_id") or "").strip()
+    password = (payload.get("password") or "").strip()
+
+    # 缺少字段
+    if not user_id or not password:
+        if request.is_json:
+            return jsonify({"ok": False, "error": "missing_credentials"}), 400
+        # 非 JSON 请求也返回 400（维持简单行为）
+        return jsonify({"ok": False, "error": "missing_credentials"}), 400
+
+    # 校验用户名+密码
+    if login_with_credentials(user_id, password):
+        # JSON 请求：返回 JSON；否则：重定向到首页
+        return jsonify({"ok": True}) if request.is_json else redirect(url_for("app.index"))
+
+    # 登录失败
+    if request.is_json:
+        return jsonify({"ok": False, "error": "invalid_credentials"}), 401
+    return jsonify({"ok": False, "error": "invalid_credentials"}), 401
 
 
 @bp.route("/logout", methods=["POST"])
