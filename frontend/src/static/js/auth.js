@@ -1,23 +1,38 @@
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('login-form');
   const loginError = document.getElementById('login-error');
+
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       loginError.textContent = '';
-      const password = document.getElementById('password').value;
+
+      const userIdInput = document.getElementById('user_id');
+      const passwordInput = document.getElementById('password');
+      const user_id = userIdInput.value.trim();
+      const password = passwordInput.value;
+
       try {
         const resp = await fetch('/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password }),
+          body: JSON.stringify({ user_id, password }),
         });
+
         if (resp.ok) {
           window.location.href = '/';
-          return;
+        } else {
+          let msg = 'Login failed';
+          try {
+            const data = await resp.json();
+            if (data && data.error) {
+              msg = data.error;
+            }
+          } catch (_) {
+            // ignore
+          }
+          loginError.textContent = msg;
         }
-        const data = await resp.json();
-        loginError.textContent = data.error || 'Login failed';
       } catch (err) {
         loginError.textContent = 'Network error';
       }
